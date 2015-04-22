@@ -1,0 +1,24 @@
+#
+# generated on 2015/04/08 12:20:56
+#
+# --table-start--
+dataClass=arrr.productpricesaver.entities.Product
+tableName=product
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=name
+canBeNull=false
+unique=true
+indexName=product_name_idx
+# --field-end--
+# --field-start--
+fieldName=barcode
+indexName=product_barcode_idx
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
