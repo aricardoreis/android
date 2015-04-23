@@ -28,8 +28,8 @@ import arrr.productpricesaver.database.DatabaseHelper;
 import arrr.productpricesaver.entities.Product;
 
 
-public class MainActivity extends OrmLiteBaseActivity<DatabaseHelper>
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends Activity
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, ProductFragment.OnFragmentInteractionListener {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -54,34 +54,23 @@ public class MainActivity extends OrmLiteBaseActivity<DatabaseHelper>
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
-        try {
-            Dao<Product, Integer> dao = getHelper().getProductDao();
-
-            /*Product product = new Product("teste");
-            dao.create(product);
-*/
-
-            String out = "";
-
-            for (Product item : dao.queryForAll()) {
-                out += item;
-            }
-
-            Toast.makeText(this, out, Toast.LENGTH_LONG).show();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
+
+        if (position == 0) {
+            FragmentManager manager = getFragmentManager();
+            manager.beginTransaction()
+                    .replace(R.id.container, ProductFragment.newInstance("", ""))
+                    .commit();
+        }
+
+       /* FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+                .commit();*/
     }
 
     public void onSectionAttached(int number) {
@@ -132,6 +121,11 @@ public class MainActivity extends OrmLiteBaseActivity<DatabaseHelper>
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onFragmentInteraction(String id) {
+        Toast.makeText(this, id, Toast.LENGTH_SHORT).show();
     }
 
     /**
