@@ -3,13 +3,20 @@ package arrr.productpricesaver;
 import android.app.Activity;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
+import android.view.ActionMode;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 
@@ -29,7 +36,7 @@ import arrr.productpricesaver.entities.Product;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ProductFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class ProductFragment extends Fragment implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -45,16 +52,47 @@ public class ProductFragment extends Fragment implements AbsListView.OnItemClick
     /**
      * The fragment's ListView/GridView.
      */
-    private AbsListView mListView;
+    private ListView _listView;
 
     /**
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private ListAdapter mAdapter;
+    private ProductAdapter _adapter;
 
     private DatabaseHelper _databaseHelper;
     private List<Product> _list;
+
+    private ActionMode _actionMode;
+    private ActionMode.Callback _actionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+            MenuInflater inflater = actionMode.getMenuInflater();
+            inflater.inflate(R.menu.product_context_menu, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+                case 0:
+                default:
+                    return false;
+            }
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode actionMode) {
+            ProductAdapter adapter = (ProductAdapter) _listView.getAdapter();
+            adapter.removeSelection();
+            _actionMode = null;
+        }
+    };
 
     // TODO: Rename and change types of parameters
     public static ProductFragment newInstance(String param1, String param2) {
@@ -94,8 +132,7 @@ public class ProductFragment extends Fragment implements AbsListView.OnItemClick
             e.printStackTrace();
         }
 
-        mAdapter = new ArrayAdapter<Product>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, _list);
+        _adapter = new ProductAdapter(getActivity(), _list);
     }
 
     @Override
@@ -104,11 +141,12 @@ public class ProductFragment extends Fragment implements AbsListView.OnItemClick
         View view = inflater.inflate(R.layout.fragment_product, container, false);
 
         // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        _listView = (ListView) view.findViewById(android.R.id.list);
+        _listView.setAdapter(_adapter);
 
-        // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
+        // Set OnItemClickListener and OnItemLongClickListener so we can be notified on item clicks
+        _listView.setOnItemClickListener(this);
+        _listView.setOnItemLongClickListener(this);
 
         return view;
     }
@@ -140,13 +178,29 @@ public class ProductFragment extends Fragment implements AbsListView.OnItemClick
         }
     }
 
+    @Override
+    public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+        ProductAdapter adapter = (ProductAdapter) _listView.getAdapter();
+        adapter.toggleSelection(position);
+        boolean hasCheckedItems = adapter.getSelectedCount() > 0;
+
+        if (hasCheckedItems && _actionMode == null) {
+            _actionMode = getActivity().startActionMode(_actionModeCallback);
+        } else if (!hasCheckedItems && _actionMode != null) {
+            _actionMode.finish();
+        }
+
+        return true;
+    }
+
     /**
      * The default content for this Fragment has a TextView that is shown when
      * the list is empty. If you would like to change the text, call this method
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+        View emptyView = _listView.getEmptyView();
 
         if (emptyView instanceof TextView) {
             ((TextView) emptyView).setText(emptyText);

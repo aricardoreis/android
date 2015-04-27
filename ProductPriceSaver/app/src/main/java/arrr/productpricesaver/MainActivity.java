@@ -8,6 +8,7 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -125,6 +126,7 @@ public class MainActivity extends Activity
 
     @Override
     public void onFragmentInteraction(String id) {
+        Log.d("debug", id);
         Toast.makeText(this, id, Toast.LENGTH_SHORT).show();
     }
 
